@@ -1,5 +1,5 @@
 // Simple API client for the StylieAI backend
-import { getSavedIdToken } from './auth';
+import { getSavedIdToken, getSavedUid } from './auth';
 
 type ChatResponse = {
   reply: string;
@@ -14,6 +14,11 @@ const API_BASE: string = (typeof import.meta !== 'undefined' && (import.meta as 
 
 export function ensureUserId(): string {
   try {
+    const authed = getSavedUid?.();
+    if (authed) {
+      localStorage.setItem('stylie_user_id', authed);
+      return authed;
+    }
     const existing = localStorage.getItem('stylie_user_id');
     if (existing) return existing;
     const id = `user_${Math.random().toString(36).slice(2, 10)}`;
@@ -53,15 +58,37 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 // Chat
-export async function sendChat(userId: string, message: string): Promise<ChatResponse> {
-  return request<ChatResponse>('/api/chat', {
+export async function sendChat(userId: string, message: string | undefined, options?: { mode?: string; chatId?: string }): Promise<any> {
+  // Include optional metadata (like mode or chatId) so the backend can store chat type and append to sessions.
+  const body: any = { userId };
+  if (typeof message !== 'undefined') body.message = message;
+  if (options?.mode) body.mode = options.mode;
+  if (options?.chatId) body.chatId = options.chatId;
+  return request<any>('/api/chat', {
     method: 'POST',
-    body: JSON.stringify({ userId, message }),
+    body: JSON.stringify(body),
+  });
+}
+
+// Create an empty chat session and return its chatId
+export async function createChat(userId: string, options?: { mode?: string }): Promise<{ chatId: string }> {
+  const body: any = { userId };
+  if (options?.mode) body.mode = options.mode;
+  return request<{ chatId: string }>('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify(body),
   });
 }
 
 export async function fetchChatHistory(userId: string) {
   return request<{ chats: any[] }>(`/api/chat/${encodeURIComponent(userId)}`);
+}
+
+// Delete a specific chat document for a user
+export async function deleteChat(userId: string, chatId: string): Promise<{ success: boolean }> {
+  return request<{ success: boolean }>(`/api/chat/${encodeURIComponent(userId)}/${encodeURIComponent(chatId)}`, {
+    method: 'DELETE',
+  });
 }
 
 // Image

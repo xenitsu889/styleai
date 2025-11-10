@@ -1,0 +1,2 @@
+- [ ] Re-test AI chat deletion to confirm Firestore documents are removed and no ghost chats reappear after refresh.
+- [ ] Verify chat timestamps now reflect Firestore server time across the UI, including hover tooltips.

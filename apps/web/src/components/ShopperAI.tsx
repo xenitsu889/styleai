@@ -1,6 +1,13 @@
-import { ArrowLeft, ShoppingBag, Sparkles, TrendingUp, Target } from 'lucide-react';
-import { Button } from './ui/button';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import React from "react";
+import {
+  ArrowLeft,
+  ShoppingBag,
+  Sparkles,
+  TrendingUp,
+  Target,
+} from "lucide-react";
+import { Button } from "./ui/button";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 interface ShopperAIProps {
   onNavigate: (page: string) => void;
@@ -12,7 +19,7 @@ export function ShopperAI({ onNavigate }: ShopperAIProps) {
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="px-6 py-4 flex items-center gap-3">
-          <button onClick={() => onNavigate('dashboard')}>
+          <button onClick={() => onNavigate("dashboard")}>
             <ArrowLeft className="w-6 h-6 text-gray-700" />
           </button>
           <h1>ShopperAI</h1>
@@ -32,7 +39,9 @@ export function ShopperAI({ onNavigate }: ShopperAIProps) {
               <Sparkles className="w-4 h-4" />
               <span className="text-sm">Coming Soon</span>
             </div>
-            <h1 className="text-white mb-2">The Future of Shopping is Smart.</h1>
+            <h1 className="text-white mb-2">
+              The Future of Shopping is Smart.
+            </h1>
           </div>
         </div>
       </div>
@@ -46,7 +55,9 @@ export function ShopperAI({ onNavigate }: ShopperAIProps) {
               Fed up of endless scrolling and confusion while shopping?
             </p>
             <p className="text-xl text-gray-700">
-              Meet <span className="text-blue-600">ShopperAI</span> — your upcoming AI companion that curates, compares, and picks what suits <span className="italic">YOU</span>, not the crowd.
+              Meet <span className="text-blue-600">ShopperAI</span> — your
+              upcoming AI companion that curates, compares, and picks what suits{" "}
+              <span className="italic">YOU</span>, not the crowd.
             </p>
           </div>
 
@@ -54,7 +65,8 @@ export function ShopperAI({ onNavigate }: ShopperAIProps) {
           <div className="bg-red-50 border-l-4 border-red-500 rounded-r-2xl p-6 mb-8">
             <h2 className="mb-4 text-red-900">The Problem</h2>
             <p className="text-gray-700 text-lg leading-relaxed">
-              Every day, millions of people buy clothes they never wear. Choices are infinite, but satisfaction is rare.
+              Every day, millions of people buy clothes they never wear. Choices
+              are infinite, but satisfaction is rare.
             </p>
           </div>
 
@@ -62,10 +74,12 @@ export function ShopperAI({ onNavigate }: ShopperAIProps) {
           <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-2xl p-6 mb-12">
             <h2 className="mb-4 text-blue-900">The Solution</h2>
             <p className="text-gray-700 text-lg leading-relaxed mb-4">
-              ShopperAI learns your vibe, your budget, your style — and finds the best match in seconds.
+              ShopperAI learns your vibe, your budget, your style — and finds
+              the best match in seconds.
             </p>
             <p className="text-gray-700 text-lg leading-relaxed">
-              Shopping won't be a headache anymore. It'll be an experience built just for you.
+              Shopping won't be a headache anymore. It'll be an experience built
+              just for you.
             </p>
           </div>
 
@@ -89,7 +103,8 @@ export function ShopperAI({ onNavigate }: ShopperAIProps) {
                 </div>
                 <h3 className="mb-2">Smart Compare</h3>
                 <p className="text-gray-600">
-                  AI compares prices, quality, and reviews to find the best deals
+                  AI compares prices, quality, and reviews to find the best
+                  deals
                 </p>
               </div>
 
@@ -128,7 +143,9 @@ export function ShopperAI({ onNavigate }: ShopperAIProps) {
           <div className="text-center mt-12 pt-8 border-t">
             <div className="flex items-center justify-center gap-2 text-gray-600">
               <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
-              <span>Powered by StylieAI — India's first AI Fashion Ecosystem</span>
+              <span>
+                Powered by StylieAI — India's first AI Fashion Ecosystem
+              </span>
             </div>
           </div>
         </div>

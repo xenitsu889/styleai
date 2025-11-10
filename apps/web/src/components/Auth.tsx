@@ -36,7 +36,10 @@ export function Auth({ onAuthenticated }: AuthProps) {
       } else {
         await signInWithEmail(email, password);
       }
-      onAuthenticated();
+      // Do NOT call onAuthenticated() directly here. We rely on the global
+      // auth state observer (onAuthUserChanged) to notify the app so that
+      // navigation (to dashboard or setup) occurs only after the auth
+      // state is fully established and the profile check runs.
     } catch (e: any) {
       setError(e?.message || "Authentication failed");
     } finally {

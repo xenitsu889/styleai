@@ -44,6 +44,8 @@ export function onAuthUserChanged(cb: (user: User | null) => void) {
     } else {
       localStorage.removeItem('stylie_id_token');
       localStorage.removeItem('stylie_uid');
+      // Also clear any fallback/local user id so API calls don't use a stale id
+      try { localStorage.removeItem('stylie_user_id'); } catch {}
     }
     cb(user);
   });

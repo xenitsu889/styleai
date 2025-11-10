@@ -1,8 +1,21 @@
-import { ArrowLeft, User, Ruler, Users, UserCircle, Palette, Crown, Mail, Settings, LogOut, Edit2 } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { UserProfile } from '../App';
+import React from "react";
+import {
+  ArrowLeft,
+  User,
+  Ruler,
+  Users,
+  UserCircle,
+  Palette,
+  Crown,
+  Mail,
+  Settings,
+  LogOut,
+  Edit2,
+} from "lucide-react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { UserProfile } from "../App";
 
 interface ProfileProps {
   userProfile: UserProfile;
@@ -11,14 +24,25 @@ interface ProfileProps {
   onLogout: () => void;
 }
 
-export function Profile({ userProfile, onNavigate, onEditProfile, onLogout }: ProfileProps) {
+export function Profile({
+  userProfile,
+  onNavigate,
+  onEditProfile,
+  onLogout,
+}: ProfileProps) {
   const profileFields = [
-    { icon: User, label: 'Name', value: userProfile.name || 'Not set' },
-    { icon: User, label: 'Age', value: `${userProfile.age} years` },
-    { icon: Ruler, label: 'Height', value: `${userProfile.height} cm` },
-    { icon: Users, label: 'Gender', value: userProfile.gender },
-    { icon: UserCircle, label: 'Body Type', value: userProfile.bodyType },
-    { icon: Palette, label: 'Skin Tone', value: userProfile.skinTone },
+    { icon: User, label: "Name", value: userProfile.name || "Not set" },
+    { icon: User, label: "Age", value: `${userProfile.age} years` },
+    { icon: Ruler, label: "Height", value: `${userProfile.height} cm` },
+    { icon: Users, label: "Gender", value: userProfile.gender },
+    { icon: UserCircle, label: "Body Type", value: userProfile.bodyType },
+    { icon: Palette, label: "Skin Tone", value: userProfile.skinTone },
+    {
+      icon: Crown,
+      label: "Favourite Colours",
+      value: userProfile.favouriteColours?.join(", ") || "Not set",
+    },
+    { icon: Mail, label: "Region", value: userProfile.region },
   ];
 
   return (
@@ -26,7 +50,7 @@ export function Profile({ userProfile, onNavigate, onEditProfile, onLogout }: Pr
       {/* Header */}
       <div className="bg-white border-b">
         <div className="px-6 py-4 flex items-center gap-3">
-          <button onClick={() => onNavigate('dashboard')}>
+          <button onClick={() => onNavigate("dashboard")}>
             <ArrowLeft className="w-6 h-6 text-slate-700" />
           </button>
           <h1 className="text-slate-900">Profile</h1>
@@ -47,7 +71,7 @@ export function Profile({ userProfile, onNavigate, onEditProfile, onLogout }: Pr
               <UserCircle className="w-16 h-16 text-slate-400" />
             </div>
           )}
-          
+
           <h2 className="text-white">Your Style Profile</h2>
         </div>
       </div>
@@ -69,7 +93,10 @@ export function Profile({ userProfile, onNavigate, onEditProfile, onLogout }: Pr
           </div>
           <div className="space-y-4">
             {profileFields.map((field, index) => (
-              <div key={index} className="flex items-center gap-4 pb-4 border-b border-slate-100 last:border-b-0 last:pb-0">
+              <div
+                key={index}
+                className="flex items-center gap-4 pb-4 border-b border-slate-100 last:border-b-0 last:pb-0"
+              >
                 <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
                   <field.icon className="w-5 h-5 text-slate-700" />
                 </div>
@@ -86,8 +113,8 @@ export function Profile({ userProfile, onNavigate, onEditProfile, onLogout }: Pr
       {/* Settings & Actions */}
       <div className="px-6">
         <Card className="divide-y divide-slate-100">
-          <button 
-            onClick={() => alert('Email preferences feature coming soon!')}
+          <button
+            onClick={() => alert("Email preferences feature coming soon!")}
             className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
           >
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -99,8 +126,12 @@ export function Profile({ userProfile, onNavigate, onEditProfile, onLogout }: Pr
             </div>
           </button>
 
-          <button 
-            onClick={() => alert('App Preferences:\n\n• Theme: Light Mode\n• Language: English\n• Notifications: Enabled\n• Auto-save: On\n\nThese settings can be customized in future updates!')}
+          <button
+            onClick={() =>
+              alert(
+                "App Preferences:\n\n• Theme: Light Mode\n• Language: English\n• Notifications: Enabled\n• Auto-save: On\n\nThese settings can be customized in future updates!"
+              )
+            }
             className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
           >
             <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
@@ -108,11 +139,13 @@ export function Profile({ userProfile, onNavigate, onEditProfile, onLogout }: Pr
             </div>
             <div className="flex-1 text-left">
               <p className="text-slate-900">App Preferences</p>
-              <p className="text-slate-600 text-sm">Customize your experience</p>
+              <p className="text-slate-600 text-sm">
+                Customize your experience
+              </p>
             </div>
           </button>
 
-          <button 
+          <button
             onClick={onLogout}
             className="w-full flex items-center gap-4 p-4 hover:bg-red-50 transition-colors"
           >

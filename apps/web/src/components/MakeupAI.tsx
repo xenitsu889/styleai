@@ -1,6 +1,7 @@
-import { ArrowLeft, Sparkles, Palette, Heart, Star } from 'lucide-react';
-import { Button } from './ui/button';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import React from "react";
+import { ArrowLeft, Sparkles, Palette, Heart, Star } from "lucide-react";
+import { Button } from "./ui/button";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 interface MakeupAIProps {
   onNavigate: (page: string) => void;
@@ -12,7 +13,7 @@ export function MakeupAI({ onNavigate }: MakeupAIProps) {
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="px-6 py-4 flex items-center gap-3">
-          <button onClick={() => onNavigate('dashboard')}>
+          <button onClick={() => onNavigate("dashboard")}>
             <ArrowLeft className="w-6 h-6 text-gray-700" />
           </button>
           <h1>MakeupAI</h1>
@@ -43,7 +44,8 @@ export function MakeupAI({ onNavigate }: MakeupAIProps) {
           {/* Intro */}
           <div className="mb-12">
             <p className="text-xl text-gray-700 mb-4">
-              Coming soon — your AI makeup artist who knows your skin tone, outfit, and occasion — before you even open your kit.
+              Coming soon — your AI makeup artist who knows your skin tone,
+              outfit, and occasion — before you even open your kit.
             </p>
           </div>
 
@@ -65,7 +67,8 @@ export function MakeupAI({ onNavigate }: MakeupAIProps) {
               MakeupAI will understand your unique tone, face shape, and vibe.
             </p>
             <p className="text-gray-700 text-lg leading-relaxed mb-4">
-              It'll guide you — what color enhances your glow, what look fits your day — effortlessly.
+              It'll guide you — what color enhances your glow, what look fits
+              your day — effortlessly.
             </p>
             <p className="text-gray-700 text-lg leading-relaxed italic">
               No filters, no fakeness, just you — enhanced.
@@ -135,7 +138,9 @@ export function MakeupAI({ onNavigate }: MakeupAIProps) {
           <div className="text-center mt-12 pt-8 border-t">
             <div className="flex items-center justify-center gap-2 text-gray-600">
               <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
-              <span>Powered by StylieAI — India's first AI Fashion Ecosystem</span>
+              <span>
+                Powered by StylieAI — India's first AI Fashion Ecosystem
+              </span>
             </div>
           </div>
         </div>

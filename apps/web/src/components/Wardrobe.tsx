@@ -1,38 +1,58 @@
-import { useState } from 'react';
-import { Plus, Trash2, ArrowLeft, Upload, Crown } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { WardrobeItem } from '../App';
+import { useState } from "react";
+import { Plus, Trash2, ArrowLeft, Upload, Crown } from "lucide-react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { WardrobeItem } from "../App";
 
 interface WardrobeProps {
   items: WardrobeItem[];
   onAddItem: (item: WardrobeItem) => void;
   onDeleteItem: (id: string) => void;
   onNavigate: (page: string) => void;
+  isLoading?: boolean;
 }
 
-export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: WardrobeProps) {
+export function Wardrobe({
+  items,
+  onAddItem,
+  onDeleteItem,
+  onNavigate,
+  isLoading = false,
+}: WardrobeProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newItem, setNewItem] = useState({ category: '', name: '', image: '' });
-  const [imagePreview, setImagePreview] = useState('');
+  const [newItem, setNewItem] = useState({ category: "", name: "", image: "" });
+  const [imagePreview, setImagePreview] = useState("");
 
   const canAddMore = true;
 
   const categories = [
-    'Shirts',
-    'T-Shirts',
-    'Pants',
-    'Jeans',
-    'Jackets',
-    'Dresses',
-    'Skirts',
-    'Shoes',
-    'Accessories',
-    'Others',
+    "Shirts",
+    "T-Shirts",
+    "Pants",
+    "Jeans",
+    "Jackets",
+    "Dresses",
+    "Skirts",
+    "Shoes",
+    "Accessories",
+    "Others",
   ];
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,8 +75,8 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
         ...newItem,
       };
       onAddItem(item);
-      setNewItem({ category: '', name: '', image: '' });
-      setImagePreview('');
+      setNewItem({ category: "", name: "", image: "" });
+      setImagePreview("");
       setIsDialogOpen(false);
     }
   };
@@ -75,16 +95,15 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => onNavigate('dashboard')}>
+            <button onClick={() => onNavigate("dashboard")}>
               <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </button>
-          <div>
-            <h1>Digital Wardrobe</h1>
-            <p className="text-gray-600 text-sm">
-              {items.length} items
-            </p>
-          </div>
-        </div>          {canAddMore ? (
+            </button>
+            <div>
+              <h1>Digital Wardrobe</h1>
+              <p className="text-gray-600 text-sm">{items.length} items</p>
+            </div>
+          </div>{" "}
+          {canAddMore ? (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
@@ -104,7 +123,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                     <Label htmlFor="category">Category</Label>
                     <Select
                       value={newItem.category}
-                      onValueChange={(value) => setNewItem({ ...newItem, category: value })}
+                      onValueChange={(value :any) =>
+                        setNewItem({ ...newItem, category: value })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
@@ -125,7 +146,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                       id="name"
                       placeholder="e.g., Blue Denim Jacket"
                       value={newItem.name}
-                      onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, name: e.target.value })
+                      }
                     />
                   </div>
 
@@ -141,8 +164,8 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                           />
                           <button
                             onClick={() => {
-                              setImagePreview('');
-                              setNewItem({ ...newItem, image: '' });
+                              setImagePreview("");
+                              setNewItem({ ...newItem, image: "" });
                             }}
                             className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-lg"
                           >
@@ -155,7 +178,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                           className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-purple-600 transition-colors"
                         >
                           <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                          <span className="text-gray-600 text-sm">Click to upload photo</span>
+                          <span className="text-gray-600 text-sm">
+                            Click to upload photo
+                          </span>
                           <input
                             id="image"
                             type="file"
@@ -171,7 +196,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                   <Button
                     onClick={handleAddItem}
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={!newItem.category || !newItem.name || !newItem.image}
+                    disabled={
+                      !newItem.category || !newItem.name || !newItem.image
+                    }
                   >
                     Add to Wardrobe
                   </Button>
@@ -184,7 +211,12 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
 
       {/* Content */}
       <div className="px-6 py-6">
-        {items.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-16">
+            <div className="animate-pulse mx-auto w-48 h-6 bg-gray-200 rounded mb-4" />
+            <p className="text-gray-600">Loading wardrobe items...</p>
+          </div>
+        ) : items.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Upload className="w-10 h-10 text-gray-400" />
@@ -212,7 +244,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                     <Label htmlFor="category">Category</Label>
                     <Select
                       value={newItem.category}
-                      onValueChange={(value) => setNewItem({ ...newItem, category: value })}
+                      onValueChange={(value:any) =>
+                        setNewItem({ ...newItem, category: value })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
@@ -233,7 +267,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                       id="name"
                       placeholder="e.g., Blue Denim Jacket"
                       value={newItem.name}
-                      onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, name: e.target.value })
+                      }
                     />
                   </div>
 
@@ -245,12 +281,12 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                           <img
                             src={imagePreview}
                             alt="Preview"
-                            className="w-full h-48 object-cover rounded-lg"
+                            className="w-full h-24 object-cover rounded-lg"
                           />
                           <button
                             onClick={() => {
-                              setImagePreview('');
-                              setNewItem({ ...newItem, image: '' });
+                              setImagePreview("");
+                              setNewItem({ ...newItem, image: "" });
                             }}
                             className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-lg"
                           >
@@ -263,7 +299,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                           className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-purple-600 transition-colors"
                         >
                           <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                          <span className="text-gray-600 text-sm">Click to upload photo</span>
+                          <span className="text-gray-600 text-sm">
+                            Click to upload photo
+                          </span>
                           <input
                             id="image"
                             type="file"
@@ -279,7 +317,9 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
                   <Button
                     onClick={handleAddItem}
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={!newItem.category || !newItem.name || !newItem.image}
+                    disabled={
+                      !newItem.category || !newItem.name || !newItem.image
+                    }
                   >
                     Add to Wardrobe
                   </Button>
@@ -292,14 +332,14 @@ export function Wardrobe({ items, onAddItem, onDeleteItem, onNavigate }: Wardrob
             {Object.entries(groupedItems).map(([category, categoryItems]) => (
               <div key={category}>
                 <h2 className="mb-4">{category}</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex grid-cols-4 gap-4">
                   {categoryItems.map((item) => (
                     <Card key={item.id} className="overflow-hidden">
                       <div className="relative">
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-48 object-cover"
+                          className="w-auto h-48 object-cover"
                         />
                         <button
                           onClick={() => onDeleteItem(item.id)}

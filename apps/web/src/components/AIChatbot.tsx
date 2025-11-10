@@ -39,6 +39,8 @@ interface AIChatbotProps {
   onSwitchSession: (sessionId: string) => void;
   onDeleteSession: (sessionId: string) => void;
   onUpdateSession: (sessionId: string, messages: Message[]) => void;
+  userRegion?: string | undefined;
+  isLoadingChats?: boolean;
 }
 
 export function AIChatbot({
@@ -49,6 +51,8 @@ export function AIChatbot({
   onSwitchSession,
   onDeleteSession,
   onUpdateSession,
+  userRegion,
+  isLoadingChats = false,
 }: AIChatbotProps) {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -85,9 +89,14 @@ export function AIChatbot({
     setIsTyping(true);
 
     try {
-      const result = await sendChat(userId, userMessage.text);
+      // Persist this message to the backend chat session so it survives refresh.
+      const result = await sendChat(userId, userMessage.text, {
+        chatId: currentSessionId,
+      });
       const replyText =
-        result?.reply || "Hmm, I could not generate a reply right now.";
+        result?.reply ||
+        result?.explain ||
+        "Hmm, I could not generate a reply right now.";
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -128,18 +137,60 @@ export function AIChatbot({
     setShowSidebar(false);
   };
 
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - new Date(date).getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  const mapRegionToTimeZone = (region?: string) => {
+    if (!region) return undefined;
+    const r = region.toLowerCase();
+    // Minimal mapping - extend as needed
+    if (r.includes("india") || r === "in") return "Asia/Kolkata";
+    if (r.includes("us") || r.includes("united states") || r === "usa")
+      return "America/New_York";
+    if (r.includes("uk") || r.includes("united kingdom") || r === "gb")
+      return "Europe/London";
+    return undefined;
+  };
 
-    if (diffMins < 60) return diffMins <= 1 ? "Just now" : `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return new Date(date).toLocaleDateString();
+  const formatDate = (date: Date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+
+    const now = new Date();
+
+    // helper: local midnight for a date
+    const startOfDay = (dt: Date) =>
+      new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    const msPerDay = 24 * 60 * 60 * 1000;
+
+    const daysDiff = Math.floor(
+      (startOfDay(now).getTime() - startOfDay(d).getTime()) / msPerDay
+    );
+
+    const tz = mapRegionToTimeZone(userRegion);
+
+    const timeStr = tz
+      ? new Intl.DateTimeFormat(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: tz,
+        }).format(d)
+      : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    if (daysDiff === 0) {
+      return `Today, ${timeStr}`;
+    }
+    if (daysDiff === 1) {
+      return `Yesterday, ${timeStr}`;
+    }
+
+    // For older dates show full date + time
+    const dateStr = tz
+      ? new Intl.DateTimeFormat(undefined, {
+          dateStyle: "short",
+          timeStyle: "short",
+          timeZone: tz,
+        }).format(d)
+      : `${d.toLocaleDateString()}, ${timeStr}`;
+    return `${dateStr}`;
   };
 
   return (
@@ -207,7 +258,10 @@ export function AIChatbot({
                             {session.title}
                           </h3>
                         </div>
-                        <p className="text-slate-400 text-xs">
+                        <p
+                          className="text-slate-400 text-xs"
+                          title={new Date(session.updatedAt).toISOString()}
+                        >
                           {formatDate(session.updatedAt)} •{" "}
                           {session.messages.length} messages
                         </p>
@@ -275,44 +329,55 @@ export function AIChatbot({
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${
-              message.sender === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`max-w-[80%] ${
-                message.sender === "user" ? "order-2" : "order-1"
-              }`}
-            >
-              {message.sender === "ai" && (
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-amber-800 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-sm text-slate-600">AI Stylist</span>
-                </div>
-              )}
-              <Card
-                className={`p-4 ${
-                  message.sender === "user"
-                    ? "bg-gradient-to-r from-slate-900 to-amber-900 text-white border-0"
-                    : "bg-white border-slate-100"
-                }`}
-              >
-                <p
-                  className={
-                    message.sender === "user" ? "text-white" : "text-slate-800"
-                  }
-                >
-                  {message.text}
-                </p>
-              </Card>
+        {isLoadingChats ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-200 animate-pulse" />
+              <p className="text-slate-600">Loading conversations…</p>
             </div>
           </div>
-        ))}
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${
+                message.sender === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[80%] ${
+                  message.sender === "user" ? "order-2" : "order-1"
+                }`}
+              >
+                {message.sender === "ai" && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-amber-800 rounded-full flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm text-slate-600">AI Stylist</span>
+                  </div>
+                )}
+                <Card
+                  className={`p-4 ${
+                    message.sender === "user"
+                      ? "bg-gradient-to-r from-slate-900 to-amber-900 text-white border-0"
+                      : "bg-white border-slate-100"
+                  }`}
+                >
+                  <p
+                    className={
+                      message.sender === "user"
+                        ? "text-white"
+                        : "text-slate-800"
+                    }
+                  >
+                    {message.text}
+                  </p>
+                </Card>
+              </div>
+            </div>
+          ))
+        )}
 
         {isTyping && (
           <div className="flex justify-start">

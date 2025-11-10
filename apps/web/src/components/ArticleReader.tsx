@@ -1,3 +1,4 @@
+import React from 'react';
 import { ArrowLeft, Clock, Tag } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
