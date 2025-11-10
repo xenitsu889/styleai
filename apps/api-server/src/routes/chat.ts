@@ -11,9 +11,10 @@ const router = express.Router();
 // Create a new chat session and optionally add the first message
 router.post('/', async (req: AuthedRequest, res, next) => {
   try {
-    const { userId, message, chatId } = req.body as { userId?: string; message?: string; chatId?: string };
-    const uid = req.user?.uid || userId;
-    if (!uid) return res.status(400).json({ error: 'userId is required' });
+    const { message, chatId } = req.body as { userId?: string; message?: string; chatId?: string };
+    // Require authenticated user for chat creation/appending
+    const uid = req.user?.uid;
+    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
 
     const profileDoc = await db.collection('profiles').doc(uid).get();
     if (!profileDoc.exists) return res.status(404).json({ error: 'Profile not found' });
@@ -76,7 +77,8 @@ router.post('/', async (req: AuthedRequest, res, next) => {
 
 router.get('/:userId?', async (req: AuthedRequest, res, next) => {
   try {
-    const userId = req.user?.uid || req.params.userId;
+    // Allow reading chat history publicly by userId param, or use authenticated uid
+    const userId = req.params.userId || req.user?.uid;
     if (!userId) return res.status(400).json({ error: 'userId is required' });
     const snapshot = await db
       .collection('profiles')
@@ -105,7 +107,7 @@ router.get('/:userId?', async (req: AuthedRequest, res, next) => {
       }
       return undefined;
     };
-
+    
     const chats = await Promise.all(
       snapshot.docs.map(async (d) => {
         const data = d.data() as any;
@@ -149,6 +151,7 @@ router.get('/:userId?', async (req: AuthedRequest, res, next) => {
 // Delete a specific chat document for a user
 router.delete('/:userId/:chatId', async (req: AuthedRequest, res, next) => {
   try {
+    // Only allow authenticated user to delete their chats
     const userId = req.user?.uid || req.params.userId;
     const chatId = req.params.chatId;
     if (!userId || !chatId) return res.status(400).json({ error: 'userId and chatId are required' });

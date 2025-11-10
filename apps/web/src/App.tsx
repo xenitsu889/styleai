@@ -80,6 +80,14 @@ const parseTimestamp = (value: any): Date => {
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>("welcome");
   const [isAuthed, setIsAuthed] = useState<boolean>(false);
+  const [authInitialMode, setAuthInitialMode] = useState<"signin" | "signup">(
+    "signin"
+  );
+  // When user clicks "Get Started" from the welcome page we want to show
+  // the Auth UI even if a persisted user is present. Use a ref to signal
+  // the auth listener to avoid immediately redirecting an already-signed-in
+  // user away from the auth page.
+  const forceShowAuthRef = useRef<boolean>(false);
   // Track whether the auth system has finished its initial check on mount.
   // While this is false, we avoid redirecting the UI to the auth page and
   // show a short loading placeholder so the app doesn't flash SignIn on refresh.
@@ -112,6 +120,21 @@ export default function App() {
     // from the welcome screen would immediately be overwritten by the
     // listener's initial callback when the user was unauthenticated.
     const unsub = onAuthUserChanged(async (u) => {
+      // If the URL explicitly requested the Auth screen (for example when
+      // the welcome "Get Started" flow appends `?forceAuth=true`), set the
+      // ref so this listener will respect the user's intent and avoid
+      // redirecting an already-authenticated user away from the Auth UI.
+      try {
+        if (
+          typeof window !== "undefined" &&
+          window.location.search.includes("forceAuth=true")
+        ) {
+          forceShowAuthRef.current = true;
+        }
+      } catch (e) {
+        // ignore
+      }
+
       // Detect whether this is the initial callback fired during app
       // initialization. The first call should not be treated as a "just
       // authenticated" sign-in event (it is the hydration of persisted auth).
@@ -119,6 +142,18 @@ export default function App() {
       if (isInitial) {
         authInitializedRef.current = true;
         setAuthInitialized(true);
+      }
+
+      // If the user explicitly requested the Auth screen from the Welcome
+      // flow (forceShowAuthRef), avoid changing the current page here so the
+      // user remains on the Sign-in UI even if a persisted user exists.
+      // Still update auth flags but return early to prevent any redirect.
+      if (forceShowAuthRef.current) {
+        // Respect the user's intent to view the Auth UI from Welcome.
+        // Update auth flags but avoid any page redirects here.
+        setIsAuthed(!!u);
+        previousAuthStateRef.current = !!u;
+        return;
       }
 
       const wasAuthenticated = previousAuthStateRef.current;
@@ -151,9 +186,10 @@ export default function App() {
             // changing the user's current page during the initial auth
             // hydration on refresh.
             if (
-              justAuthenticated ||
-              currentPageRef.current === "auth" ||
-              currentPageRef.current === "setup"
+              (justAuthenticated ||
+                currentPageRef.current === "auth" ||
+                currentPageRef.current === "setup") &&
+              !forceShowAuthRef.current
             ) {
               setCurrentPage("dashboard");
             }
@@ -263,6 +299,10 @@ export default function App() {
   useEffect(() => {
     const initial = pathToPage(window.location.pathname || "/");
     setCurrentPage(initial);
+    // If the initial path explicitly requested signup, start Auth in signup
+    if (initial === "signup") {
+      setAuthInitialMode("signup");
+    }
 
     const onPop = () => {
       const p = pathToPage(window.location.pathname || "/");
@@ -285,8 +325,29 @@ export default function App() {
   }, [currentPage]);
 
   const handleSignup = () => {
+    // Explicitly start the auth screen in sign-in mode when clicking Get Started
+    // and keep the Auth page visible even if the user is already authenticated.
+    setAuthInitialMode("signin");
+    // Push a query param so the auth listener can detect the user's intent
+    // even if its callback runs concurrently. This makes the intent to
+    // show the Sign-in UI persistent across history navigation as well.
+    try {
+      if (typeof window !== "undefined") {
+        window.history.pushState({}, "", "/SignIn?forceAuth=true");
+      }
+    } catch (e) {}
+
+    forceShowAuthRef.current = true;
     setCurrentPage("auth");
   };
+
+  // Clear the force-show flag when leaving the auth page so future auth
+  // listener events behave normally.
+  useEffect(() => {
+    if (currentPage !== "auth") {
+      forceShowAuthRef.current = false;
+    }
+  }, [currentPage]);
 
   const handleProfileComplete = (profile: UserProfile) => {
     setUserProfile(profile);
@@ -503,9 +564,11 @@ export default function App() {
   useEffect(() => {
     if (!isAuthed) return;
     const userId = ensureUserId();
+    console.log("Initial fetch: userId =", userId);
     (async () => {
       try {
         const p = await getProfile(userId);
+        console.log("Initial fetch: Profile response =", p);
         if (p && typeof p === "object" && !("error" in p)) {
           const mapped: UserProfile = {
             name: p.name || "",
@@ -523,17 +586,50 @@ export default function App() {
       setIsLoadingWardrobe(true);
       try {
         const w = await getWardrobe(userId);
+        console.log("Initial fetch: Wardrobe response =", w);
         const items = (w.items || []).map((it) => ({
           id: it.id,
           category: it.category,
           image: it.imageUrl || "",
           name: it.name,
         })) as WardrobeItem[];
+        console.log("Initial fetch: Mapped items =", items);
         setWardrobeItems(items);
-      } catch {}
+      } catch (err) {
+        console.error("Error fetching wardrobe:", err);
+      }
       setIsLoadingWardrobe(false);
     })();
   }, [isAuthed]);
+
+  // Fetch data when navigating to dashboard to ensure fresh data is loaded
+  // even when the user was already authenticated (e.g., persisted session).
+  useEffect(() => {
+    if (!isAuthed) return;
+    if (currentPage !== "dashboard") return;
+
+    const userId = ensureUserId();
+    console.log("Dashboard: Fetching wardrobe for userId:", userId);
+    (async () => {
+      // Re-fetch wardrobe items when entering dashboard
+      setIsLoadingWardrobe(true);
+      try {
+        const w = await getWardrobe(userId);
+        console.log("Dashboard: Wardrobe response:", w);
+        const items = (w.items || []).map((it) => ({
+          id: it.id,
+          category: it.category,
+          image: it.imageUrl || "",
+          name: it.name,
+        })) as WardrobeItem[];
+        console.log("Dashboard: Mapped wardrobe items:", items);
+        setWardrobeItems(items);
+      } catch (err) {
+        console.error("Error fetching wardrobe on dashboard:", err);
+      }
+      setIsLoadingWardrobe(false);
+    })();
+  }, [currentPage, isAuthed]);
 
   // Ensure the wardrobe loading indicator appears immediately when the
   // user is on the Wardrobe page and we haven't fetched items yet.
@@ -707,7 +803,17 @@ export default function App() {
     // When the Auth component detects a successful authentication event,
     // navigate to the dashboard — the global auth listener will redirect
     // to profile setup if the user has no profile stored in Firebase.
-    return <Auth onAuthenticated={() => setCurrentPage("dashboard")} />;
+    return (
+      <Auth
+        initialMode={authInitialMode}
+        // When the welcome flow requested the Auth UI explicitly we want
+        // to avoid the Auth component auto-navigating away if a persisted
+        // session already exists. Pass the inverse of the forceShow flag
+        // so Auth can ignore the initial persisted-state callback.
+        allowAutoRedirect={!forceShowAuthRef.current}
+        onAuthenticated={() => setCurrentPage("dashboard")}
+      />
+    );
   }
 
   return (
@@ -795,6 +901,7 @@ export default function App() {
                   onNavigate={setCurrentPage}
                   onEditProfile={handleEditProfile}
                   onLogout={handleLogout}
+                  isLoading={isLoadingProfile}
                 />
               ))}
 

@@ -22,6 +22,8 @@ interface ProfileProps {
   onNavigate: (page: string) => void;
   onEditProfile: () => void;
   onLogout: () => void;
+  // when true, avoid showing action buttons (used while profile is loading)
+  isLoading?: boolean;
 }
 
 export function Profile({
@@ -29,6 +31,7 @@ export function Profile({
   onNavigate,
   onEditProfile,
   onLogout,
+  isLoading,
 }: ProfileProps) {
   const profileFields = [
     { icon: User, label: "Name", value: userProfile.name || "Not set" },
@@ -81,15 +84,17 @@ export function Profile({
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-slate-900">Personal Information</h3>
-            <Button
-              onClick={onEditProfile}
-              variant="outline"
-              size="sm"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50"
-            >
-              <Edit2 className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
+            {!isLoading && (
+              <Button
+                onClick={onEditProfile}
+                variant="outline"
+                size="sm"
+                className="border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            )}
           </div>
           <div className="space-y-4">
             {profileFields.map((field, index) => (
@@ -113,50 +118,56 @@ export function Profile({
       {/* Settings & Actions */}
       <div className="px-6">
         <Card className="divide-y divide-slate-100">
-          <button
-            onClick={() => alert("Email preferences feature coming soon!")}
-            className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
-          >
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Mail className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-slate-900">Email Preferences</p>
-              <p className="text-slate-600 text-sm">Manage notifications</p>
-            </div>
-          </button>
+          {!isLoading && (
+            <>
+              <button
+                onClick={() => alert("Email preferences feature coming soon!")}
+                className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-slate-900">Email Preferences</p>
+                  <p className="text-slate-600 text-sm">Manage notifications</p>
+                </div>
+              </button>
 
-          <button
-            onClick={() =>
-              alert(
-                "App Preferences:\n\n• Theme: Light Mode\n• Language: English\n• Notifications: Enabled\n• Auto-save: On\n\nThese settings can be customized in future updates!"
-              )
-            }
-            className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
-          >
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-              <Settings className="w-5 h-5 text-amber-700" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-slate-900">App Preferences</p>
-              <p className="text-slate-600 text-sm">
-                Customize your experience
-              </p>
-            </div>
-          </button>
+              <button
+                onClick={() =>
+                  alert(
+                    "App Preferences:\n\n• Theme: Light Mode\n• Language: English\n• Notifications: Enabled\n• Auto-save: On\n\nThese settings can be customized in future updates!"
+                  )
+                }
+                className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
+              >
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-amber-700" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-slate-900">App Preferences</p>
+                  <p className="text-slate-600 text-sm">
+                    Customize your experience
+                  </p>
+                </div>
+              </button>
 
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center gap-4 p-4 hover:bg-red-50 transition-colors"
-          >
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <LogOut className="w-5 h-5 text-red-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-red-600">Log Out</p>
-              <p className="text-slate-600 text-sm">Sign out of your account</p>
-            </div>
-          </button>
+              <button
+                onClick={onLogout}
+                className="w-full flex items-center gap-4 p-4 hover:bg-red-50 transition-colors"
+              >
+                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                  <LogOut className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-red-600">Log Out</p>
+                  <p className="text-slate-600 text-sm">
+                    Sign out of your account
+                  </p>
+                </div>
+              </button>
+            </>
+          )}
         </Card>
       </div>
 
