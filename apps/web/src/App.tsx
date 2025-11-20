@@ -403,7 +403,7 @@ export default function App() {
           messages: [
             {
               id: "1",
-              text: "Hello! I'm your personal AI fashion stylist. How can I help you look amazing today?",
+              text: "Hey! I’m StylieAI – your friendly style buddy. Feel free to share how your day’s going, your mood, or anything you’d like to wear and we’ll take it from there.",
               sender: "ai",
               timestamp: new Date(),
             },
@@ -424,7 +424,7 @@ export default function App() {
           messages: [
             {
               id: "1",
-              text: "Hello! I'm your personal AI fashion stylist. How can I help you look amazing today?",
+              text: "Hey! I’m StylieAI – your friendly style buddy. Feel free to share how your day’s going, your mood, or anything you’d like to wear and we’ll take it from there.",
               sender: "ai",
               timestamp: new Date(),
             },

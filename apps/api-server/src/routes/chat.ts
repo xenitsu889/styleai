@@ -29,9 +29,29 @@ router.post('/', async (req: AuthedRequest, res, next) => {
 
       if (!message) return res.status(400).json({ error: 'message is required when appending to a chat' });
 
-      const messagesForPrompt = buildMessages(profile, message);
-      const raw = await callChat(messagesForPrompt);
-      const parsed = tryParseJsonFromMarkdown(raw);
+      const academicPattern = /\b(code|program|python|java|c\+\+|javascript|algorithm|equation|integral|derivative|physics|chemistry|biology|calculus|math|solve|compute|formula|theorem)\b/i;
+      let parsed: any;
+      if (academicPattern.test(message)) {
+        parsed = {
+          reply: "I focus on style, lifestyle and confidence—not technical or academic topics. Tell me about your day, mood or any outfit question and I'll jump in.",
+          explain: "Scope limited to fashion & lifestyle.",
+          tags: ["boundary"],
+        };
+      } else {
+        const messagesForPrompt = buildMessages(profile, message);
+        const raw = await callChat(messagesForPrompt);
+        parsed = tryParseJsonFromMarkdown(raw);
+        // Defensive cleanup: ensure reply does not contain trailing JSON and
+        // provide a friendly explain when parser failed to extract one.
+        if (parsed && typeof parsed === 'object') {
+          if (parsed.reply && typeof parsed.reply === 'string') {
+            parsed.reply = parsed.reply.replace(/```(?:json)?[\s\S]*?```/g, '').replace(/\{[\s\S]*"selected_item_ids"[\s\S]*\}\s*$/g, '').trim();
+          }
+          if (!parsed.explain || String(parsed.explain).toLowerCase().includes('unable to parse json')) {
+            parsed.explain = parsed.reply || 'Suggested items from your wardrobe.';
+          }
+        }
+      }
 
       await chatRef.collection('messages').add({
         userMessage: message,
@@ -56,9 +76,27 @@ router.post('/', async (req: AuthedRequest, res, next) => {
     const chatDocRef = await db.collection('profiles').doc(uid).collection('chats').add(initialChatData);
 
     if (message) {
-      const messagesForPrompt = buildMessages(profile, message);
-      const raw = await callChat(messagesForPrompt);
-      const parsed = tryParseJsonFromMarkdown(raw);
+      const academicPattern = /\b(code|program|python|java|c\+\+|javascript|algorithm|equation|integral|derivative|physics|chemistry|biology|calculus|math|solve|compute|formula|theorem)\b/i;
+      let parsed: any;
+      if (academicPattern.test(message)) {
+        parsed = {
+          reply: "I’m here for style, mood and personal vibe conversations—not academic or technical help. Share what you feel like wearing or how your day’s going!",
+          explain: "Keeping focus on fashion & lifestyle.",
+          tags: ["boundary"],
+        };
+      } else {
+        const messagesForPrompt = buildMessages(profile, message);
+        const raw = await callChat(messagesForPrompt);
+        parsed = tryParseJsonFromMarkdown(raw);
+        if (parsed && typeof parsed === 'object') {
+          if (parsed.reply && typeof parsed.reply === 'string') {
+            parsed.reply = parsed.reply.replace(/```(?:json)?[\s\S]*?```/g, '').replace(/\{[\s\S]*"selected_item_ids"[\s\S]*\}\s*$/g, '').trim();
+          }
+          if (!parsed.explain || String(parsed.explain).toLowerCase().includes('unable to parse json')) {
+            parsed.explain = parsed.reply || 'Suggested items from your wardrobe.';
+          }
+        }
+      }
 
       await chatDocRef.collection('messages').add({
         userMessage: message,

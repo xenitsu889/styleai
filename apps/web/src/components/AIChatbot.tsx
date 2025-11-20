@@ -76,6 +76,36 @@ export function AIChatbot({
   const handleSend = async () => {
     if (!inputValue.trim() || !currentSessionId) return;
 
+    const trimmed = inputValue.trim();
+    const isGreeting =
+      /^(hi|hello|hey|yo|hola|namaste|sup|hii+|heyy+|heya|heyoo)$/i.test(
+        trimmed
+      );
+    const hinglishLex =
+      /(bhai|yaar|mast|acha|accha|nahi|nai|haan|kya|kyu|kyun)/i;
+    const isHinglishGreeting = isGreeting && hinglishLex.test(trimmed);
+    // If first user message is a simple greeting, respond locally with a warm intro
+    if (isGreeting && messages.length === 0) {
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: trimmed,
+        sender: "user",
+        timestamp: new Date(),
+      };
+      const greetingText = isHinglishGreeting
+        ? "Hey bhai! Kaise ho? 😄 Mood kaisa hai aaj? Batao na kya vibe chahiye — chahe chill look ho ya thoda standout — pehle baat karte hain phir style dekhenge."
+        : "Hey! Great to meet you 😊 Tell me about your day, mood, or anything you feel like wearing and we’ll explore some style vibes whenever you want.";
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: greetingText,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      onUpdateSession(currentSessionId, [userMessage, aiMessage]);
+      setInputValue("");
+      return;
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,

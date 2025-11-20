@@ -89,6 +89,11 @@ export function Wardrobe({
     return acc;
   }, {} as Record<string, WardrobeItem[]>);
 
+  const namePlaceholder =
+    newItem.category === "Others"
+      ? "e.g., Beanie, Scarf, Belt (not listed above)"
+      : "e.g., Blue Denim Jacket";
+
   return (
     <div className="pb-24 min-h-screen bg-gray-50">
       {/* Header */}
@@ -144,12 +149,18 @@ export function Wardrobe({
                     <Label htmlFor="name">Item Name</Label>
                     <Input
                       id="name"
-                      placeholder="e.g., Blue Denim Jacket"
+                      placeholder={namePlaceholder}
                       value={newItem.name}
                       onChange={(e) =>
                         setNewItem({ ...newItem, name: e.target.value })
                       }
                     />
+                    {newItem.category === "Others" && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        You chose Others — please name the item type (e.g.,
+                        Beanie, Scarf, Belt).
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -157,11 +168,14 @@ export function Wardrobe({
                     <div className="mt-2">
                       {imagePreview ? (
                         <div className="relative">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-full h-40 sm:h-48 md:h-56 lg:h-72 object-cover rounded-lg"
-                          />
+                          <div className="w-full max-h-60 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              style={{ maxHeight: 240 }}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
                           <button
                             onClick={() => {
                               setImagePreview("");
@@ -265,12 +279,18 @@ export function Wardrobe({
                     <Label htmlFor="name">Item Name</Label>
                     <Input
                       id="name"
-                      placeholder="e.g., Blue Denim Jacket"
+                      placeholder={namePlaceholder}
                       value={newItem.name}
                       onChange={(e) =>
                         setNewItem({ ...newItem, name: e.target.value })
                       }
                     />
+                    {newItem.category === "Others" && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        You chose Others — please name the item type (e.g.,
+                        Beanie, Scarf, Belt).
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -278,11 +298,14 @@ export function Wardrobe({
                     <div className="mt-2">
                       {imagePreview ? (
                         <div className="relative">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-full h-24 object-cover rounded-lg"
-                          />
+                          <div className="w-full max-h-56 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              style={{ maxHeight: 240 }}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
                           <button
                             onClick={() => {
                               setImagePreview("");
@@ -306,7 +329,7 @@ export function Wardrobe({
                             id="image"
                             type="file"
                             accept="image/*"
-                            className="hidden"
+                            className="hidden h-42"
                             onChange={handleImageUpload}
                           />
                         </label>
