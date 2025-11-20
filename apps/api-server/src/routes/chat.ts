@@ -8,6 +8,26 @@ import { tryParseJsonFromMarkdown } from '../utils/parser';
 
 const router = express.Router();
 
+// Produce a concise single-sentence explanation from a longer reply.
+// Heuristic: prefer a sentence mentioning pairing/completion/balance; else first sentence.
+function generateShortExplain(reply: string): string {
+  if (!reply) return 'Suggests a balanced combination from your wardrobe.';
+  // Split into sentences using period/question/exclamation boundaries.
+  const sentences = reply
+    .replace(/\n+/g, ' ') // collapse newlines
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  const keywordRegex = /\b(pair|paired|combine|combined|balance|balanced|complete|completes|layer|layered|add|adds|professional|casual|edge|comfortable|polished)\b/i;
+  let chosen = sentences.find(s => keywordRegex.test(s)) || sentences[0] || reply.trim();
+  // Trim if overly long
+  // Enforce a tighter 140 char cap for brevity
+  if (chosen.length > 140) {
+    chosen = chosen.slice(0, 137).replace(/[,:;.!?\s]+$/,'') + '…';
+  }
+  return chosen;
+}
+
 // Create a new chat session and optionally add the first message
 router.post('/', async (req: AuthedRequest, res, next) => {
   try {
@@ -47,9 +67,16 @@ router.post('/', async (req: AuthedRequest, res, next) => {
           if (parsed.reply && typeof parsed.reply === 'string') {
             parsed.reply = parsed.reply.replace(/```(?:json)?[\s\S]*?```/g, '').replace(/\{[\s\S]*"selected_item_ids"[\s\S]*\}\s*$/g, '').trim();
           }
-          if (!parsed.explain || String(parsed.explain).toLowerCase().includes('unable to parse json')) {
-            parsed.explain = parsed.reply || 'Suggested items from your wardrobe.';
+          if (!parsed.explain || String(parsed.explain).toLowerCase().includes('unable to parse json') || parsed.explain === parsed.reply) {
+            parsed.explain = generateShortExplain(parsed.reply);
           }
+        }
+      }
+
+      // Final defensive sanitize: never return the sentinel string upstream
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.explain && String(parsed.explain).toLowerCase().includes('unable to parse json')) {
+          parsed.explain = generateShortExplain(parsed.reply);
         }
       }
 
@@ -92,9 +119,15 @@ router.post('/', async (req: AuthedRequest, res, next) => {
           if (parsed.reply && typeof parsed.reply === 'string') {
             parsed.reply = parsed.reply.replace(/```(?:json)?[\s\S]*?```/g, '').replace(/\{[\s\S]*"selected_item_ids"[\s\S]*\}\s*$/g, '').trim();
           }
-          if (!parsed.explain || String(parsed.explain).toLowerCase().includes('unable to parse json')) {
-            parsed.explain = parsed.reply || 'Suggested items from your wardrobe.';
+          if (!parsed.explain || String(parsed.explain).toLowerCase().includes('unable to parse json') || parsed.explain === parsed.reply) {
+            parsed.explain = generateShortExplain(parsed.reply);
           }
+        }
+      }
+
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.explain && String(parsed.explain).toLowerCase().includes('unable to parse json')) {
+          parsed.explain = generateShortExplain(parsed.reply);
         }
       }
 

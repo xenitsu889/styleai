@@ -50,13 +50,11 @@ export function tryParseJsonFromMarkdown(text: string) {
   }
 
   const reply = (replyFromJson || replyText || '').toString();
-  return {
-    reply,
-    explain: explain || undefined,
-    tags: tags || [],
-    image_prompt,
-    selected_item_ids: selectedIds,
-  };
+  const result: any = { reply, tags: tags || [] };
+  if (explain) result.explain = explain;
+  if (image_prompt) result.image_prompt = image_prompt;
+  if (selectedIds && selectedIds.length) result.selected_item_ids = selectedIds;
+  return result;
 }
 
 
