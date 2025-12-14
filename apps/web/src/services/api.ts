@@ -8,9 +8,12 @@ type ChatResponse = {
   image_prompt?: string;
 };
 
-const API_BASE: string = (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_API_BASE)
-  || (typeof window !== 'undefined' && (window as any).__API_BASE__)
-  || 'http://localhost:5000';
+// Resolve API base URL from environment. Prefer NEXT_PUBLIC_API_BASE, then VITE_API_BASE.
+// Default to local dev API at http://localhost:5000.
+const API_BASE: string =
+  (typeof process !== 'undefined' && (process as any)?.env?.NEXT_PUBLIC_API_BASE) ||
+  (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_API_BASE) ||
+  'http://localhost:5000';
 
 export function ensureUserId(): string {
   try {
