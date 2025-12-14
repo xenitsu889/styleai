@@ -51,7 +51,8 @@
     },
     build: {
       target: 'esnext',
-      outDir: 'build',
+        // Use Vercel/Vite default output dir to avoid deploy errors
+        outDir: 'dist',
     },
     server: {
       port: 3000,
